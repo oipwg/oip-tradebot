@@ -26,7 +26,7 @@ def make_b64_qr(address):
     qr = qrcode.QRCode()
     qr.add_data(address)
     qr.make(fit=True)
-    qr_img = qrc.make_image()
+    qr_img = qr.make_image()
     bin_img = io.BytesIO
     qr_img.save(output, 'PNG')
     bin_img.seek(0)
