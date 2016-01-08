@@ -3,8 +3,11 @@
 
 from flask import Flask, g, request
 import sqlite3
+import base64
+import qrcode
 from jsonrpc import ServiceProxy
 import json
+import io
 import os
 
 app = Flask(__name__)
@@ -18,6 +21,17 @@ def get_db():
     if db is None:
         db = g._database = connect_to_database()
     return db
+
+def make_b64_qr(address):
+    qr = qrcode.QRCode()
+    qr.add_data(address)
+    qr.make(fit=True)
+    qr_img = qrc.make_image()
+    bin_img = io.BytesIO
+    qr_img.save(output, 'PNG')
+    bin_img.seek(0)
+    b64_data = base64.b64encode(output.read()).decode()
+    return b64_data
 
 def get_btc_address():
     access = ServiceProxy("http://%s:%s@127.0.0.1:%s" % (app.config['RPC_USER'], app.config['RPC_PASSWORD'], app.config['RPC_PORT']))
@@ -63,7 +77,10 @@ def depositaddress():
         get_db().commit()
     else:
         addressA = result["addressA"]
-    return addressA
+        
+    qr_data = make_b64_qr(addressA)
+    result = '{} <img src="data:image/png;base64,{}">'.format(addressA, qr_data)
+    return result
 
 @app.route('/flobalance')
 def flobalance():
