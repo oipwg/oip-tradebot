@@ -2,12 +2,12 @@
 """Public API"""
 
 from flask import Flask, g, request
+import StringIO
 import sqlite3
 import base64
 import qrcode
 from jsonrpc import ServiceProxy
 import json
-import io
 import os
 
 app = Flask(__name__)
@@ -27,10 +27,9 @@ def make_b64_qr(address):
     qr.add_data(address)
     qr.make(fit=True)
     qr_img = qr.make_image()
-    bin_img = io.BytesIO
-    qr_img.save(output, 'PNG')
-    bin_img.seek(0)
-    b64_data = base64.b64encode(output.read()).decode()
+    bin_img = StringIO.StringIO()
+    qr_img.save(bin_img, 'PNG')
+    b64_data = base64.b64encode(bin_img.getvalue())
     return b64_data
 
 def get_btc_address():
