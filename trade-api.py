@@ -78,7 +78,7 @@ def depositaddress():
         addressA = result["addressA"]
         
     qr_data = make_b64_qr(addressA)
-    result = '{} <img src="data:image/png;base64,{}">'.format(addressA, qr_data)
+    result = '{} <br /><img src="data:image/png;base64,{}">'.format(addressA, qr_data)
     return result
 
 @app.route('/flobalance')
