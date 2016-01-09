@@ -61,7 +61,7 @@ def depositaddress():
     send_raw = False
     if 'currency' in request.args:
         currencyA = request.args['currency']
-    if 'raw' in request.args['raw']:
+    if 'raw' in request.args:
         send_raw = True
         
     addressB = request.args['floaddress']
