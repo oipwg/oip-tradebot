@@ -80,10 +80,10 @@ def depositaddress():
     else:
         addressA = result["addressA"]
         
+    if send_raw: return addressA
+    
     qr_data = make_b64_qr(addressA)
     result = '<code>{}</code><br /><img src="data:image/png;base64,{}">'.format(addressA, qr_data)
-    
-    if send_raw: return addressA
     return result
 
 @app.route('/flobalance')
