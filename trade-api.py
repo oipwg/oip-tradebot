@@ -57,10 +57,13 @@ def depositaddress():
     """Return a BTC address for deposits to a FLO address"""
     # TODO: Input validation
     # TODO: Get a new BTC deposit address
+    currencyA = 'BTC'
+    send_raw = False
     if 'currency' in request.args:
         currencyA = request.args['currency']
-    else:
-        currencyA = 'BTC'
+    if 'raw' in request.args['raw']:
+        send_raw = True
+        
     addressB = request.args['floaddress']
 
     # First check that an address exists
@@ -78,7 +81,9 @@ def depositaddress():
         addressA = result["addressA"]
         
     qr_data = make_b64_qr(addressA)
-    result = '{} <br /><img src="data:image/png;base64,{}">'.format(addressA, qr_data)
+    result = '<code>{}</code><br /><img src="data:image/png;base64,{}">'.format(addressA, qr_data)
+    
+    if send_raw: return addressA
     return result
 
 @app.route('/flobalance')
