@@ -2,7 +2,10 @@
 """Public API"""
 
 from flask import Flask, g, request
+import StringIO
 import sqlite3
+import base64
+import qrcode
 from jsonrpc import ServiceProxy
 import json
 import os
@@ -18,6 +21,16 @@ def get_db():
     if db is None:
         db = g._database = connect_to_database()
     return db
+
+def make_b64_qr(address):
+    qr = qrcode.QRCode()
+    qr.add_data(address)
+    qr.make(fit=True)
+    qr_img = qr.make_image()
+    bin_img = StringIO.StringIO()
+    qr_img.save(bin_img, 'PNG')
+    b64_data = base64.b64encode(bin_img.getvalue())
+    return b64_data
 
 def get_btc_address():
     access = ServiceProxy("http://%s:%s@127.0.0.1:%s" % (app.config['RPC_USER'], app.config['RPC_PASSWORD'], app.config['RPC_PORT']))
@@ -63,7 +76,10 @@ def depositaddress():
         get_db().commit()
     else:
         addressA = result["addressA"]
-    return addressA
+        
+    qr_data = make_b64_qr(addressA)
+    result = '{} <img src="data:image/png;base64,{}">'.format(addressA, qr_data)
+    return result
 
 @app.route('/flobalance')
 def flobalance():
