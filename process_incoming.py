@@ -1,24 +1,27 @@
 #!/usr/bin/env python
 """Process incoming wallet transactions and write them to a database"""
 
+from flask import Flask
 import sqlite3
 import sys
-from jsonrpc import ServiceProxy
+from authproxy import AuthServiceProxy, JSONRPCException
 import json
 import os
 
 txid = sys.argv[1]
+app = Flask(__name__)
+app.config.from_envvar('TRADE_API_SETTINGS')
 
-rpc_user = os.environ['RPC_USER']
-rpc_password = os.environ['RPC_PASSWORD']
-rpc_port = os.environ['RPC_PORT']
-currency_a = os.environ['CURRENCY_A']
+rpc_user = app.config['RPC_USER']
+rpc_password = app.config['RPC_PASSWORD']
+rpc_port = app.config['RPC_PORT']
+currency_a = app.config['CURRENCY_A']
 
-access = ServiceProxy("http://%s:%s@127.0.0.1:%s" % (rpc_user, rpc_password, rpc_port))
+access = AuthServiceProxy("http://%s:%s@127.0.0.1:%s" % (rpc_user, rpc_password, rpc_port))
 
 transactions = access.listtransactions()
 
-con = sqlite3.connect('alexandria_payment.db')
+con = sqlite3.connect(app.config['DATABASE'])
 cur = con.cursor()
     
 def add_tx_to_database(tx):
@@ -26,6 +29,7 @@ def add_tx_to_database(tx):
         # First run a select to see if a receive exists
         cur.execute("SELECT txid FROM receive WHERE txid = ? LIMIT 1;" , (tx['txid'],))
         if not cur.fetchone():
+        	# Add in transaction and set confirmations to 0
             cur.execute("INSERT INTO receive (currencyA, addressA, amount, txid, processed) VALUES (?, ?, ?, ?, 0);"
                 , (currency_a, tx['address'], tx['amount'], tx['txid']))
             con.commit()
@@ -35,4 +39,3 @@ for tx in transactions:
         add_tx_to_database(tx)
 
 con.close()
-

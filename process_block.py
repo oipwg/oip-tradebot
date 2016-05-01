@@ -1,24 +1,26 @@
 #!/usr/bin/env python
 """Process incoming block and unprocessed receives and update the database"""
 
+from flask import Flask
 import sqlite3
 import sys
-from jsonrpc import ServiceProxy
+from authproxy import AuthServiceProxy, JSONRPCException
 import json
 import os
 
-blockhash = sys.argv[1]
+app = Flask(__name__)
+app.config.from_envvar('TRADE_API_SETTINGS')
 
-rpc_user = os.environ['RPC_USER']
-rpc_password = os.environ['RPC_PASSWORD']
-rpc_port = os.environ['RPC_PORT']
-currency_a = os.environ['CURRENCY_A']
+rpc_user = app.config['RPC_USER']
+rpc_password = app.config['RPC_PASSWORD']
+rpc_port = app.config['RPC_PORT']
+currency_a = app.config['CURRENCY_A']
 
-access = ServiceProxy("http://%s:%s@127.0.0.1:%s" % (rpc_user, rpc_password, rpc_port))
+access = AuthServiceProxy("http://%s:%s@127.0.0.1:%s" % (rpc_user, rpc_password, rpc_port))
 
 transactions = access.listtransactions()
 
-con = sqlite3.connect('alexandria_payment.db')
+con = sqlite3.connect(app.config['DATABASE'])
 cur = con.cursor()
     
 def process_transaction(tx):

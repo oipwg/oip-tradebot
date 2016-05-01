@@ -1,25 +1,30 @@
 #!/usr/bin/env python
 """Processes the "receive" table and logs to "action" table. Checks x number of confirmations on receive."""
 
+from flask import Flask
 import sqlite3
 import sys
-from jsonrpc import ServiceProxy
+from authproxy import AuthServiceProxy, JSONRPCException
 import json
 import requests
 import os
 
-confirms = int(sys.argv[1])
+app = Flask(__name__)
+app.config.from_envvar('TRADE_API_SETTINGS')
 
-con = sqlite3.connect('alexandria_payment.db')
+con = sqlite3.connect(app.config['DATABASE'])
 con.row_factory = sqlite3.Row
 cur = con.cursor()
 
-rpc_user = os.environ['RPC_USER']
-rpc_password = os.environ['RPC_PASSWORD']
-rpc_port = os.environ['RPC_PORT']
-currency_b = os.environ['CURRENCY_B']
+rpc_user = app.config['RPC_USER']
+rpc_password = app.config['RPC_PASSWORD']
+rpc_port = app.config['RPC_PORT']
+currency_a = app.config['CURRENCY_A']
 
-access = ServiceProxy("http://%s:%s@127.0.0.1:%s" % (rpc_user, rpc_password, rpc_port))
+# The number of confirmations before sending the transaction.
+confirms = app.config['NUMBER_OF_CONFIRMATIONS_REQUIRED']
+
+access = AuthServiceProxy("http://%s:%s@127.0.0.1:%s" % (rpc_user, rpc_password, rpc_port))
 
 def get_bittrex_values():
     url = 'https://bittrex.com/api/v1.1/public/getmarketsummary?market=btc-flo'

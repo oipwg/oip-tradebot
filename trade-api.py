@@ -6,7 +6,7 @@ import StringIO
 import sqlite3
 import base64
 import qrcode
-from jsonrpc import ServiceProxy
+from authproxy import AuthServiceProxy, JSONRPCException
 import json
 import os
 
@@ -33,12 +33,13 @@ def make_b64_qr(address):
     return b64_data
 
 def get_btc_address():
-    access = ServiceProxy("http://%s:%s@127.0.0.1:%s" % (app.config['RPC_USER'], app.config['RPC_PASSWORD'], app.config['RPC_PORT']))
+    access = AuthServiceProxy("http://%s:%s@127.0.0.1:%s" % (app.config['RPC_USER'], app.config['RPC_PASSWORD'], app.config['RPC_PORT']))
+    print(access.getinfo())
     address = access.getnewaddress()
     return address
 
 def get_flo_balance():
-    access = ServiceProxy("http://%s:%s@127.0.0.1:%s" % (app.config['CURRENCY_B_RPC_USER'], app.config['CURRENCY_B_RPC_PASSWORD'], app.config['CURRENCY_B_RPC_PORT']))
+    access = AuthServiceProxy("http://%s:%s@127.0.0.1:%s" % (app.config['CURRENCY_B_RPC_USER'], app.config['CURRENCY_B_RPC_PASSWORD'], app.config['CURRENCY_B_RPC_PORT']))
     balance = access.getbalance()
     return balance
 
