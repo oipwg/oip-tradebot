@@ -23,6 +23,7 @@ currency_a = app.config['CURRENCY_A']
 
 # The number of confirmations before sending the transaction.
 confirms = app.config['NUMBER_OF_CONFIRMATIONS_REQUIRED']
+zeroconf = app.config['ZERO_CONF_MAX_BTC']
 
 access = AuthServiceProxy("http://%s:%s@127.0.0.1:%s" % (rpc_user, rpc_password, rpc_port))
 
@@ -105,6 +106,10 @@ def process_receive(receive):
     result = cur.fetchone()
     addressB = result["addressB"]
 
+    # If the transaction is greater than the 0 conf amount and there have not been enough confirmations then return.
+    if amount > zeroconf and receive['confirmations'] < confirms:
+        return
+
     # Perform the send
     currencyBAmount = receive['amount'] / weightedPrice
     txidsend = access.sendtoaddress(addressB, currencyBAmount)
@@ -122,7 +127,8 @@ def process_receive(receive):
 
 # First run a select to see if a receive has been Processed. Exit if it has been Processed.
 with con:
-    cur.execute("SELECT * FROM receive WHERE processed = 0 AND confirmations >= ?;", (confirms,))
+    # Load all transactions that have not been processed
+    cur.execute("SELECT * FROM receive WHERE processed = 0;")
     results = cur.fetchall()
 
 if results:
