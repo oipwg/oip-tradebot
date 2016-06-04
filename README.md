@@ -1,7 +1,10 @@
 # Requirements
 
-flask
-pillow
+- `flask`
+- `pillow`
+- `requests`
+- `qrcode`
+- `mysql-connector-repackaged`
 
 # Running
 
