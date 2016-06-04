@@ -2,7 +2,7 @@
 """Process incoming block and unprocessed receives and update the database"""
 
 from flask import Flask
-import sqlite3
+import mysql.connector
 import sys
 from authproxy import AuthServiceProxy, JSONRPCException
 import json
@@ -20,19 +20,17 @@ access = AuthServiceProxy("http://%s:%s@127.0.0.1:%s" % (rpc_user, rpc_password,
 
 transactions = access.listtransactions()
 
-con = sqlite3.connect(app.config['DATABASE'])
-cur = con.cursor()
+cnx = mysql.connector.connect(user=app.config['MYSQL_USER'], password=app.config['MYSQL_PASS'], host=app.config['MYSQL_HOST'], database=app.config['MYSQL_DB'])
+cursor = cnx.cursor()
     
 def process_transaction(tx):
     # First run a select to see if a receive has been Processed. Exit if it has been Processed.
-    with con:
-        cur.execute("UPDATE receive SET confirmations = ?, blockhash = ? WHERE txid = ?;"
-                , (tx['confirmations'], tx['blockhash'], tx['txid']))
-        con.commit()
+    cursor.execute("UPDATE receive SET confirmations = %s, blockhash = %s WHERE txid = %s;", (tx['confirmations'], tx['blockhash'], tx['txid']))
+    cnx.commit()
 
 for tx in transactions:
     if tx['category'] == 'receive' and  tx['confirmations'] >= 1:
         process_transaction(tx)
 
-con.close()
-
+cursor.close()
+cnx.close()
