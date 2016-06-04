@@ -12,5 +12,9 @@ CURRENCY_B = 'FLO'
 
 NUMBER_OF_CONFIRMATIONS_REQUIRED = 1
 ZERO_CONF_MAX_BTC = 0.001
-DATABASE = '/path/to/alexandria_payment.db'
+MYSQL_HOST = 'localhost'
+MYSQL_PORT = 6379
+MYSQL_USER = 'username'
+MYSQL_PASS = 'password'
+MYSQL_DB = 'tradebot'
 DEBUG = False
