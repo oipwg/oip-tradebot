@@ -3,7 +3,7 @@
 
 from flask import Flask, g, request
 import StringIO
-import sqlite3
+import mysql.connector
 import base64
 import qrcode
 from authproxy import AuthServiceProxy, JSONRPCException
@@ -14,7 +14,7 @@ app = Flask(__name__)
 app.config.from_envvar('TRADE_API_SETTINGS')
 
 def connect_to_database():
-    return sqlite3.connect(app.config['DATABASE'])
+    return mysql.connector.connect(user=app.config['MYSQL_USER'], password=app.config['MYSQL_PASS'], host=app.config['MYSQL_HOST'], database=app.config['MYSQL_DB'])
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -68,18 +68,21 @@ def depositaddress():
     addressB = request.args['floaddress']
 
     # First check that an address exists
-    get_db().row_factory=sqlite3.Row
     cur = get_db().cursor()
-    cur.execute("SELECT * FROM sendreceivemap WHERE addressB = ? LIMIT 1;", (addressB,))
+    cur.execute("SELECT * FROM sendreceivemap WHERE addressB = %s LIMIT 1;", (addressB,))
     result = cur.fetchone()
     if not result:
         addressA = get_btc_address()
-        #cur.execute("update sendreceivemap set addressB = ? where addressB = "" limit 1;", (addressB,))
-        cur.execute("INSERT INTO sendreceivemap (currencyA, addressA, currencyB, addressB) VALUES (?, ?, 'FLO', ?);"
-                , (currencyA, addressA, addressB))
+        cur.execute("INSERT INTO sendreceivemap (currencyA, addressA, currencyB, addressB) VALUES (%s, %s, 'FLO', %s);", (currencyA, addressA, addressB))
         get_db().commit()
     else:
-        addressA = result["addressA"]
+        # sendrecievemap Array Values
+        # [0]: id
+        # [1]: currencyA
+        # [2]: addressA
+        # [3]: currencyB
+        # [4]: addressB
+        addressA = result[2]
         
     if send_raw: return addressA
     
