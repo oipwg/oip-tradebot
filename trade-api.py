@@ -68,7 +68,7 @@ def depositaddress():
     addressB = request.args['floaddress']
 
     # First check that an address exists
-    cur = get_db().cursor()
+    cur = get_db().cursor(prepared=True)
     cur.execute("SELECT * FROM sendreceivemap WHERE addressB = %s LIMIT 1;", (addressB,))
     result = cur.fetchone()
     if not result:
