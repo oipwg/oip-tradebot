@@ -41,15 +41,20 @@ CURRENCY_B_RPC_PASSWORD = 'PASSWORD GOES HERE'
 CURRENCY_B_RPC_PORT = 18322
 CURRENCY_B = 'FLO'
 
-NUMBER_OF_CONFIRMATIONS_REQUIRED = 1
-ZERO_CONF_MAX_BTC = 0.001
-DATABASE = '/path/to/alexandria_payment.db'
+MYSQL_HOST = 'localhost'
+MYSQL_PORT = '3306'
+MYSQL_USER = 'username'
+MYSQL_PASS = 'password'
+MYSQL_DB = 'tradebot'
 DEBUG = False
 ```
 
 If you would like to allow zero confirmation sending, set `ZERO_CONF_MAX_BTC` to the maximum amount you want a zero confirmation send to happen. This value is in BTC.
 
 NOTE: We highly suggest you do NOT set the number of confirmations to 0 as this very dangerous due to transaction malleability which WILL cause a double spend.
+
+# MySQL Database
+In MySQL create a database named whatever you want. After creating that database put it into the `MYSQL_DB` variable in the config. Next, create the three tables required for the tradebot using the SQL provided in `create_table.sql`. Make sure to fill in the host, port, username, and password for your MySQL database into the config.
 
 ## Cron/Bitcoin Tasks
 ### Cron
