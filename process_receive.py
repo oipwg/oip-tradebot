@@ -16,9 +16,9 @@ app.config.from_envvar('TRADE_API_SETTINGS')
 cnx = mysql.connector.connect(user=app.config['MYSQL_USER'], password=app.config['MYSQL_PASS'], host=app.config['MYSQL_HOST'], database=app.config['MYSQL_DB'])
 cursor = cnx.cursor()
 
-rpc_user = app.config['RPC_USER']
-rpc_password = app.config['RPC_PASSWORD']
-rpc_port = app.config['RPC_PORT']
+rpc_user = app.config['CURRENCY_B_RPC_USER']
+rpc_password = app.config['CURRENCY_B_RPC_PASSWORD']
+rpc_port = app.config['CURRENCY_B_RPC_PORT']
 currency_a = app.config['CURRENCY_A']
 
 # The number of confirmations before sending the transaction.
