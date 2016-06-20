@@ -43,7 +43,7 @@ def get_btc_address():
 
 def get_flo_balance():
     access = AuthServiceProxy("http://%s:%s@127.0.0.1:%s" % (app.config['CURRENCY_B_RPC_USER'], app.config['CURRENCY_B_RPC_PASSWORD'], app.config['CURRENCY_B_RPC_PORT']))
-    balance = access.getbalance()
+    balance = access.getbalance("tradebot")
     return balance
 
 @app.teardown_appcontext

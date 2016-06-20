@@ -113,7 +113,7 @@ def process_receive(receive):
     # Recieve Array Values
     # [3]: amount
     currencyBAmount = float(receive[3]) / weightedPrice
-    txidsend = access.sendtoaddress(addressB, currencyBAmount)
+    txidsend = access.sendfrom("tradebot", addressB, currencyBAmount)
 
     # Log completion
     status = "SENT"
