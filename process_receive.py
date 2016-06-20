@@ -136,7 +136,11 @@ def process_receive(receive):
 cursor.execute("SELECT * FROM receive WHERE processed = 0;")
 
 if cursor:
-    for receive in cursor:
+    transactions = []
+    for transaction in cursor:
+        transactions.append(transaction)
+
+    for receive in transactions:
         process_receive(receive)
 
 cursor.close()
