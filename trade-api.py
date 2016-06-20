@@ -13,14 +13,17 @@ import os
 app = Flask(__name__)
 app.config.from_envvar('TRADE_API_SETTINGS')
 
-def connect_to_database():
-    return mysql.connector.connect(user=app.config['MYSQL_USER'], password=app.config['MYSQL_PASS'], host=app.config['MYSQL_HOST'], database=app.config['MYSQL_DB'])
+dbconfig = {
+  "user": app.config['MYSQL_USER'], 
+  "password": app.config['MYSQL_PASS'], 
+  "host": app.config['MYSQL_HOST'], 
+  "database": app.config['MYSQL_DB']
+}
 
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = connect_to_database()
-    return db
+mysql_pool = mysql.connector.pooling.MySQLConnectionPool(pool_size = 5, **dbconfig)
+
+def conn():
+    return mysql_pool.get_connection()
 
 def make_b64_qr(address):
     qr = qrcode.QRCode()
@@ -55,6 +58,7 @@ def echo():
 
 @app.route('/depositaddress')
 def depositaddress():
+    conn = conn()
     """Return a BTC address for deposits to a FLO address"""
     # TODO: Input validation
     # TODO: Get a new BTC deposit address
@@ -68,13 +72,13 @@ def depositaddress():
     addressB = request.args['floaddress']
 
     # First check that an address exists
-    cur = get_db().cursor(prepared=True)
+    cur = conn.cursor(prepared=True)
     cur.execute("SELECT * FROM sendreceivemap WHERE addressB = %s LIMIT 1;", (addressB,))
     result = cur.fetchone()
     if not result:
         addressA = get_btc_address()
         cur.execute("INSERT INTO sendreceivemap (currencyA, addressA, currencyB, addressB) VALUES (%s, %s, 'FLO', %s);", (currencyA, addressA, addressB))
-        get_db().commit()
+        conn.commit()
     else:
         # sendrecievemap Array Values
         # [0]: id
@@ -88,6 +92,9 @@ def depositaddress():
     
     qr_data = make_b64_qr(addressA)
     result = '<code>{}</code><br /><img src="data:image/png;base64,{}">'.format(addressA, qr_data)
+
+    cur.close()
+    conn.close()
     return result
 
 @app.route('/flobalance')
