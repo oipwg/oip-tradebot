@@ -3,7 +3,7 @@
 
 from flask import Flask, g, request
 import StringIO
-import mysql.connector
+import mysql.connector.pooling
 import base64
 import qrcode
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
