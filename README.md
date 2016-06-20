@@ -6,7 +6,7 @@ Use PIP to install the following packages:
 - `pillow`
 - `requests`
 - `qrcode`
-- `mysql-connector-repackaged`
+- `http://cdn.mysql.com//Downloads/Connector-Python/mysql-connector-python-2.1.3.tar.gz`
 - `git+https://github.com/jgarzik/python-bitcoinrpc.git`
 
 # Running
