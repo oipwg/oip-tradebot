@@ -20,7 +20,7 @@ dbconfig = {
   "database": app.config['MYSQL_DB']
 }
 
-mysql_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name = "mypool", pool_size = 3, **dbconfig)
+mysql_pool = mysql.connector.connect(pool_name = "mypool", pool_size = 3, **dbconfig)
 
 def conn():
     return mysql_pool.get_connection()
