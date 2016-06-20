@@ -58,7 +58,7 @@ def echo():
 
 @app.route('/depositaddress')
 def depositaddress():
-    conn = conn()
+    con = conn()
     """Return a BTC address for deposits to a FLO address"""
     # TODO: Input validation
     # TODO: Get a new BTC deposit address
@@ -72,13 +72,13 @@ def depositaddress():
     addressB = request.args['floaddress']
 
     # First check that an address exists
-    cur = conn.cursor(prepared=True)
+    cur = con.cursor(prepared=True)
     cur.execute("SELECT * FROM sendreceivemap WHERE addressB = %s LIMIT 1;", (addressB,))
     result = cur.fetchone()
     if not result:
         addressA = get_btc_address()
         cur.execute("INSERT INTO sendreceivemap (currencyA, addressA, currencyB, addressB) VALUES (%s, %s, 'FLO', %s);", (currencyA, addressA, addressB))
-        conn.commit()
+        con.commit()
     else:
         # sendrecievemap Array Values
         # [0]: id
@@ -94,7 +94,7 @@ def depositaddress():
     result = '<code>{}</code><br /><img src="data:image/png;base64,{}">'.format(addressA, qr_data)
 
     cur.close()
-    conn.close()
+    con.close()
     return result
 
 @app.route('/flobalance')
