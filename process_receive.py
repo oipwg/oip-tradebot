@@ -4,7 +4,7 @@
 from flask import Flask
 import mysql.connector
 import sys
-from authproxy import AuthServiceProxy, JSONRPCException
+from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 import json
 import requests
 import os

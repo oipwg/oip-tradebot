@@ -1,10 +1,13 @@
 # Requirements
 
+Use PIP to install the following packages:
+
 - `flask`
 - `pillow`
 - `requests`
 - `qrcode`
 - `mysql-connector-repackaged`
+- `git+https://github.com/jgarzik/python-bitcoinrpc.git`
 
 # Running
 

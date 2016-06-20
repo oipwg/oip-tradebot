@@ -6,7 +6,7 @@ import StringIO
 import mysql.connector
 import base64
 import qrcode
-from authproxy import AuthServiceProxy, JSONRPCException
+from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 import json
 import os
 
