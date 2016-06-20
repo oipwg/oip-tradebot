@@ -20,10 +20,10 @@ dbconfig = {
   "database": app.config['MYSQL_DB']
 }
 
-mysql_pool = mysql.connector.connect(pool_name = "mypool", pool_size = 3, **dbconfig)
+cnxpool = mysql.connector.pooling.MySQLConnectionPool(pool_name = "tradebot-api-pool", pool_size = 5, **dbconfig)
 
 def conn():
-    return mysql_pool.get_connection()
+    return cnxpool.get_connection()
 
 def make_b64_qr(address):
     qr = qrcode.QRCode()
