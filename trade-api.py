@@ -87,14 +87,15 @@ def depositaddress():
         # [3]: currencyB
         # [4]: addressB
         addressA = result[2]
-        
+    
+    cur.close()
+    con.close()
+    
     if send_raw: return addressA
     
     qr_data = make_b64_qr(addressA)
     result = '<code>{}</code><br /><img src="data:image/png;base64,{}">'.format(addressA, qr_data)
-
-    cur.close()
-    con.close()
+    
     return result
 
 @app.route('/flobalance')
