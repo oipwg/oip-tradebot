@@ -3,6 +3,7 @@
 
 from datetime import date
 from flask import Flask, g, request
+import requests
 import StringIO
 import mysql.connector.pooling
 import base64
@@ -111,6 +112,18 @@ def faucet():
         remote_addr = request.headers.getlist("X-Forwarded-For")[0].rpartition(' ')[-1]
     else:
         remote_addr = request.remote_addr or 'untrackable'
+
+    recaptcha = request.form.get("recaptcha")
+
+    if recaptcha is None:
+        return '{"success": false, "message": "No recaptcha auth provided!"}'
+
+
+    # Verify Recaptcha
+    r = requests.post('https://www.google.com/recaptcha/api/siteverify', data = {'secret':app.config['RECAPTCHA_SECRET'],'response':request.form.get("recaptcha"),'remoteip':remote_addr})
+
+    if r.json()['success'] is False:
+        return '{"success": false, "message": "reCAPTCHAv2 error! \n %s"}' % r.json()["error-codes"]
 
     flo_address = request.form.get("flo_address")
 
