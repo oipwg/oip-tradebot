@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Public API"""
 
+from datetime import date
 from flask import Flask, g, request
 import StringIO
 import mysql.connector.pooling
@@ -102,6 +103,54 @@ def depositaddress():
 def flobalance():
     """Return FLO balance"""
     return str(get_flo_balance())
+
+@app.route('/faucet', methods=['POST'])
+def faucet():
+    """Send 1 FLO to requested address"""
+    if 'X-Forwarded-For' in request.headers:
+        remote_addr = request.headers.getlist("X-Forwarded-For")[0].rpartition(' ')[-1]
+    else:
+        remote_addr = request.remote_addr or 'untrackable'
+
+    flo_address = request.form.get("flo_address")
+
+    print flo_address
+
+    if flo_address is None:
+        return '{"success": false, "message": "No address provided"}'
+
+    con = conn()
+    dt = date.today()
+
+    access = AuthServiceProxy("http://%s:%s@127.0.0.1:%s" % (app.config['CURRENCY_B_RPC_USER'], app.config['CURRENCY_B_RPC_PASSWORD'], app.config['CURRENCY_B_RPC_PORT']))
+
+    # Check if they've already requested today
+    cur = con.cursor(prepared=True)
+    cur.execute("SELECT * FROM faucet WHERE flo_address = %s AND date_today = %s LIMIT 1;", (flo_address, dt))
+    result = cur.fetchone()
+    if not result:
+        cur.execute("SELECT * FROM faucet WHERE remote_addr = %s AND date_today = %s LIMIT 1;", (remote_addr, dt))
+        result = cur.fetchone()
+        if not result:
+            # Send some FLO
+            try:
+                txidsend = access.sendfrom("faucet", flo_address, 1)
+                result = '{"success": true, "txid": "%s"}' % txidsend
+                cur.execute("INSERT INTO faucet (flo_address, remote_addr, date_today, txid_send) VALUES (%s, %s, %s, %s);", (flo_address, remote_addr, dt, txidsend))
+                con.commit()
+            except JSONRPCException:
+                print 'Error sending FLO from Faucet'
+                result = '{"success": false, "message": "No FLO Left in Faucet"}'
+        else:
+            result = '{"success": false, "message": "This IP has already recieved money today!"}'
+    else:
+        # Already sent some FLO today
+        result = '{"success": false, "message": "This address has already recieved money today!"}'
+
+    cur.close()
+    con.close()
+
+    return result
 
 if __name__ == "__main__":
 
