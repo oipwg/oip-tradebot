@@ -4,3 +4,5 @@ trade_api_settings.cfg
 *.db
 
 *.pyc
+
+*.bak

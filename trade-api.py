@@ -48,6 +48,11 @@ def get_flo_balance():
     balance = access.getbalance("tradebot")
     return balance
 
+def get_flo_txs(address):
+    cur.execute("SELECT * FROM action WHERE txidreceive = %s;", (txid))
+    result = cur.fetchone()
+    return result;
+
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
@@ -105,6 +110,34 @@ def flobalance():
     """Return FLO balance"""
     return str(get_flo_balance())
 
+@app.route('/getsenttxid', methods=['POST'])
+def gettxs():
+    """Return FLO txid"""
+    con = conn()
+
+    access = AuthServiceProxy("http://%s:%s@127.0.0.1:%s" % (app.config['CURRENCY_B_RPC_USER'], app.config['CURRENCY_B_RPC_PASSWORD'], app.config['CURRENCY_B_RPC_PORT']))
+
+    # Check for the existing txid
+    cur = con.cursor(prepared=True)
+
+    txid = request.form.get("btc_txid")
+
+    cur.execute("SELECT * FROM action WHERE txidreceive = %s;", [txid])
+    result = cur.fetchone()
+
+    if not result:
+        cur.close()
+        con.close()
+        return 'nothing-yet';
+
+    rawtx = access.getrawtransaction(str(result[2]))
+    txinfo = access.decoderawtransaction(rawtx)
+
+    cur.close()
+    con.close()
+
+    return str(result[2]) + "/////" + str(txinfo);
+
 @app.route('/faucet', methods=['POST'])
 def faucet():
     """Send 1 FLO to requested address"""
@@ -148,7 +181,9 @@ def faucet():
             # Send some FLO
             try:
                 txidsend = access.sendfrom("faucet", flo_address, 1)
-                result = '{"success": true, "txid": "%s"}' % txidsend
+                rawtx = access.getrawtransaction(txidsend)
+                txinfo = access.decoderawtransaction(rawtx)
+                result = '{"success": true, "txid": "%s", "tx-info": "%s"}' % (txidsend, txinfo)
                 cur.execute("INSERT INTO faucet (flo_address, remote_addr, date_today, txid_send) VALUES (%s, %s, %s, %s);", (flo_address, remote_addr, dt, txidsend))
                 con.commit()
             except JSONRPCException:
